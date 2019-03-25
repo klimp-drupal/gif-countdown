@@ -82,9 +82,6 @@ class GifController extends AbstractController
                 UrlGeneratorInterface::ABSOLUTE_URL
             );
             $embed_code = "<img src='{$url}'>";
-
-            // Render a GIF-image.
-            echo $embed_code;
         }
 
         return $this->render('test/gif-form.html.twig', [

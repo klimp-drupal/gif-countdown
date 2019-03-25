@@ -4,21 +4,42 @@
 
 {% block body %}
 
-  {{ form_start(form) }}
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 col-md-8">
+                {{ form_start(form) }}
 
-    {#{{ form_widget(form) }}#}
+                {#{{ form_widget(form) }}#}
 
-    <div>
-      {{ form_widget(form.date, { 'attr': {'autocomplete': 'off'} }) }}
-      {{ form_widget(form.timezone, { 'attr': {'autocomplete': 'off'} }) }}
-    </div>
+                {{ form_widget(form.date, { 'attr': {
+                    'autocomplete': 'off',
+                    'class': 'form-group'
+                } }) }}
 
-    <button type="submit">Go</button>
+                <div class="form-group">
+                    {{ form_widget(form.timezone, { 'attr': {
+                        'autocomplete': 'off',
+                        'class': 'form-control'
+                    } }) }}
+                </div>
 
-  {% if embed_code %}
-    <textarea rows="10" cols="50">{{ embed_code }}</textarea>
-  {% endif %}
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Go</button>
+                </div>
 
-  {{ form_end(form) }}
+                {% if embed_code %}
+                    <div class="form-group">
+                        <textarea class="form-control" rows="10" cols="50">{{ embed_code }}</textarea>
+                    </div>
+                {% endif %}
+
+                <div class="form-group">
+                    {{ embed_code | raw }}
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+  </div>
 
 {% endblock %}
