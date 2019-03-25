@@ -14,8 +14,15 @@ class TestController extends AbstractController
 {
 
     /**
-    * @Route("/gif", name="gif")
-    */
+     * @Route("/gif", name="gif")
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   Request object.
+     * @param \App\Service\GifHelper $gifHelper
+     *   GifHelper service.
+     *
+     * @throws \Exception
+     */
     public function gif(Request $request, GifHelper $gifHelper)
     {
         $timeframe = 10 * 60; // sec
@@ -45,6 +52,7 @@ class TestController extends AbstractController
             $now->modify('+1 second');
         }
 
+        // Create a gif.
         $gc = new GifCreator();
         $gc->create($frames, $durations);
         echo $gc->getGif();
@@ -52,14 +60,23 @@ class TestController extends AbstractController
     }
 
     /**
-    * @Route("/form", name="form")
-    */
+     * @Route("/form", name="form")
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   Request object.
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     *   Response object.
+     */
     public function form(Request $request)
     {
         $form = $this->createForm(TestFormType::class);
 
+        // If the form is submitted.
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+
+            // Generate an absolute URL-string.
             $url = $this->generateUrl(
                 'gif',
                 [
@@ -69,6 +86,8 @@ class TestController extends AbstractController
                 UrlGeneratorInterface::ABSOLUTE_URL
             );
             $embed_code = "<img src='{$url}'>";
+
+            // Render a GIF-image.
             echo $embed_code;
         }
 
