@@ -42,11 +42,7 @@ class TestController extends AbstractController
             $text = $gifHelper->generateText($date_to, $now);
 
             // Create an image.
-            $frames[] = $gifHelper->createImage(
-                "images/bg.png",
-                "fonts/OpenSans-Regular.ttf",
-                $text
-            );
+            $frames[] = $gifHelper->createImage($text);
             $durations[] = 60;
 
             $now->modify('+1 second');

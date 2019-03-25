@@ -26,3 +26,14 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\Service\GifHelper:
+        arguments:
+            $bg: 'images/bg.png'
+            $font_family: 'fonts/OpenSans-Regular.ttf'
+            $font_size: 40
+            $text_offset_x: 10
+            $text_offset_y: 70
+            $color_red: 255
+            $color_green: 255
+            $color_blue: 255
