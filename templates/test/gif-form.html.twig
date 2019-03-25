@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+  {{ form_start(form) }}
+
+    {#{{ form_widget(form) }}#}
+
+    <div>
+      {{ form_widget(form.date, { 'attr': {'autocomplete': 'off'} }) }}
+      {{ form_widget(form.timezone, { 'attr': {'autocomplete': 'off'} }) }}
+    </div>
+
+    <button type="submit">Go</button>
+
+  {% if embed_code %}
+    <textarea rows="10" cols="50">{{ embed_code }}</textarea>
+  {% endif %}
+
+  {{ form_end(form) }}
+
+{% endblock %}
