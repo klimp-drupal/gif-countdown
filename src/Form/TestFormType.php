@@ -12,12 +12,12 @@ use Symfony\Component\Form\FormEvents;
 
 class TestFormType extends AbstractType
 {
-    protected $toInclude;
+    protected $checkboxes;
 
     public function __construct()
     {
-        $this->toInclude = [
-            'days',
+        $this->checkboxes = [
+//            'days',
             'hours',
             'minutes',
             'seconds'
@@ -26,7 +26,8 @@ class TestFormType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        foreach ($this->toInclude as $field_name) {
+        $first_checkbox = reset($this->checkboxes);
+        foreach ($this->checkboxes as $field_name) {
             $checkbox_options = [
                 'label'    => ucwords($field_name),
                 'required' => FALSE,
@@ -34,8 +35,8 @@ class TestFormType extends AbstractType
                 'data' => FALSE,
             ];
 
-            // Days is always enabled.
-            if ($field_name == 'days') $checkbox_options['disabled'] = FALSE;
+            // The first checkbox is always enabled.
+            if ($field_name == $first_checkbox) $checkbox_options['disabled'] = FALSE;
 
             // Add a checkbox.
             $builder->add($field_name, CheckboxType::class, $checkbox_options);
@@ -71,7 +72,7 @@ class TestFormType extends AbstractType
             if ($value !== 'true') $alter_to_false = TRUE;
             if ($alter_to_false) $value = FALSE;
 
-            if ($next_checkbox_field_name = next($this->toInclude)) {
+            if ($next_checkbox_field_name = next($this->checkboxes)) {
                 $next_config = $form->get($next_checkbox_field_name)->getConfig();
                 $next_options = $next_config->getOptions();
                 $next_options['disabled'] = FALSE;
@@ -82,7 +83,7 @@ class TestFormType extends AbstractType
                     $next_options['disabled'] = TRUE;
                 }
 
-                // Add a checkbox with altered options.
+                // Add the next checkbox with altered options.
                 $form->add($next_checkbox_field_name, get_class($next_config->getType()->getInnerType()), $next_options);
             }
         }

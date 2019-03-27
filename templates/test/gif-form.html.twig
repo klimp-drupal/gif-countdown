@@ -7,38 +7,25 @@
     <div class="container">
         <div class="row">
             <div class="col-sm-12 col-md-8">
+
                 {{ form_start(form) }}
 
-                {#{{ form_widget(form) }}#}
+                <div class="form-group form-control">
+                    {% for el in form %}
 
-                <div class="form-group">
-                    {{ form_label(form.days) }}
-                    {{ form_widget(form.days, {
-                        'attr': {
-                            'autocomplete': 'off',
-                        }
-                    }) }}
+                        {% set el_type = el.vars.block_prefixes.1 %}
+                        {% set el_name = el.vars.name %}
+                        {% if el_type == 'checkbox' %}
 
-                    {{ form_label(form.hours) }}
-                    {{ form_widget(form.hours, {
-                        'attr': {
-                            'autocomplete': 'off',
-                        }
-                    }) }}
+                            {{ form_label(el) }}
+                            {{ form_widget(el, {
+                                'attr': {
+                                    'autocomplete': 'off',
+                                }
+                            }) }}
 
-                    {{ form_label(form.minutes) }}
-                    {{ form_widget(form.minutes, {
-                        'attr': {
-                            'autocomplete': 'off',
-                        }
-                    }) }}
-
-                    {{ form_label(form.seconds) }}
-                    {{ form_widget(form.seconds, {
-                        'attr': {
-                            'autocomplete': 'off',
-                        }
-                    }) }}
+                        {% endif %}
+                    {% endfor %}
                 </div>
 
                 {{ form_widget(form.date, { 'attr': {
