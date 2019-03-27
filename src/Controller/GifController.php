@@ -25,6 +25,7 @@ class GifController extends AbstractController
      */
     public function gif(Request $request, GifHelper $gifHelper)
     {
+        // TODO: to params.
         $timeframe = 10 * 60; // sec
 
         // TODO: if params are empty.

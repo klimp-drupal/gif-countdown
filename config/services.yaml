@@ -37,3 +37,6 @@ services:
             $color_red: 255
             $color_green: 255
             $color_blue: 255
+#        tags:
+#            - { name: custom.gif_helper}
+#        tags: ['custom.gif_helper']
