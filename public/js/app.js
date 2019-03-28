@@ -6,11 +6,11 @@ $(document).on('change', selectors, function() {
   var $triggered = $(this);
   var $form = $triggered.closest('form');
 
-  var data = {};
-  $(selectors.split(',')).each(function(key, value) {
-    $value = $($.trim(value));
-    data[$value.attr('name')] = $value.is(':checked')
-  });
+  // var data = {};
+  // $(selectors.split(',')).each(function(key, value) {
+  //   $value = $($.trim(value));
+  //   data[$value.attr('name')] = $value.is(':checked')
+  // });
 
   // data[$('#gif_form_date').attr('name')] = '111111111';
   // data[$('#gif_form_timezone').attr('name')] = $('#gif_form_timezone').val();

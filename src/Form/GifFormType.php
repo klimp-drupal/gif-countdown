@@ -5,6 +5,7 @@ namespace App\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TimezoneType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -94,10 +95,13 @@ class GifFormType extends AbstractType
         );
 
         // Date selector.
-        $builder->add('date', DateTimeType::class, [
+        $builder->add('date', DateType::class, [
             'data' => new \DateTime("now"),
-            'with_seconds' => TRUE,
         ]);
+//        $builder->add('date', DateTimeType::class, [
+//            'data' => new \DateTime("now"),
+//        ]);
+
 //        $builder->add('date', TextType::class, [
 //            'data' => 'sdfsdf',
 //        ]);
@@ -120,38 +124,38 @@ class GifFormType extends AbstractType
         $event->setData($data);
     }
 
-    public function onFieldPreSubmit(FormEvent $event)
-    {
-        $el_form = $event->getForm();
-        $form = $el_form->getParent();
-        $value = $event->getData();
-        $name = $el_form->getName();
-
-        $q = 1;
-
-        if ($next_checkbox_field_name = $this->getNextCheckbox($name)) {
-            $next_config = $form->get($next_checkbox_field_name)->getConfig();
-            $next_options = $next_config->getOptions();
-            $next_options['disabled'] = FALSE;
-
-            // Alter all the following checkboxes to be unchecked.
-            if (!isset($value) || $value !== 'true') {
-                $next_options['disabled'] = TRUE;
-            }
-
-            // Add the next checkbox with altered options.
-            $form->add($next_checkbox_field_name, get_class($next_config->getType()->getInnerType()), $next_options);
-        }
-    }
-
-    protected function getNextCheckbox($current)
-    {
-        foreach ($this->checkboxes as $index => $item) {
-            if ($item == $current) {
-                return isset($this->checkboxes[$index + 1]) ? $this->checkboxes[$index + 1]: FALSE;
-            }
-        }
-    }
+//    public function onFieldPreSubmit(FormEvent $event)
+//    {
+//        $el_form = $event->getForm();
+//        $form = $el_form->getParent();
+//        $value = $event->getData();
+//        $name = $el_form->getName();
+//
+//        $q = 1;
+//
+//        if ($next_checkbox_field_name = $this->getNextCheckbox($name)) {
+//            $next_config = $form->get($next_checkbox_field_name)->getConfig();
+//            $next_options = $next_config->getOptions();
+//            $next_options['disabled'] = FALSE;
+//
+//            // Alter all the following checkboxes to be unchecked.
+//            if (!isset($value) || $value !== 'true') {
+//                $next_options['disabled'] = TRUE;
+//            }
+//
+//            // Add the next checkbox with altered options.
+//            $form->add($next_checkbox_field_name, get_class($next_config->getType()->getInnerType()), $next_options);
+//        }
+//    }
+//
+//    protected function getNextCheckbox($current)
+//    {
+//        foreach ($this->checkboxes as $index => $item) {
+//            if ($item == $current) {
+//                return isset($this->checkboxes[$index + 1]) ? $this->checkboxes[$index + 1]: FALSE;
+//            }
+//        }
+//    }
 
     public function onPreSubmit(FormEvent $event)
     {
@@ -177,6 +181,7 @@ class GifFormType extends AbstractType
 //            if ($value !== 'true') $alter_to_false = TRUE;
             if ($value !== $checked || $alter_to_false) $value = FALSE;
 
+            // TODO: check that next() works.
             if ($next_checkbox_field_name = next($this->checkboxes)) {
                 $next_config = $form->get('checkboxes')->get($next_checkbox_field_name)->getConfig();
                 $next_options = $next_config->getOptions();
@@ -218,46 +223,94 @@ class GifFormType extends AbstractType
 
 //        $event->setData($data);
 
-        $a = 1;
+//        $a = 1;
 
     }
 
     public function onPreSubmitDateSet(FormEvent $event)
     {
-        $a = 1;
         $form = $event->getForm();
         $data = $event->getData();
 
-        $date_config = $form->get('date')->getConfig();
-        $date_options = $date_config->getOptions();
+        $date_options = [
+            'data' => new \DateTime("now"),
+        ];
 
-        if (!isset($data['checkboxes']['seconds']) || !$data['checkboxes']['seconds']) $date_options['with_seconds'] = FALSE;
-        if (!isset($data['checkboxes']['minutes']) || !$data['checkboxes']['minutes']) $date_options['with_minutes'] = FALSE;
+        $old_date_type = $type = DateType::class;
+        if (isset($data['checkboxes']['hours']) && $data['checkboxes']['hours']) {
+            $type = DateTimeType::class;
+            $date_options['with_minutes'] = false;
+            $date_options['with_seconds'] = false;
 
-        // Date selector.
-        $form->add('date', get_class($date_config->getType()->getInnerType()), $date_options);
-    }
+            if (isset($data['checkboxes']['minutes']) && $data['checkboxes']['minutes']) {
+                $date_options['with_minutes'] = true;
+                if (isset($data['checkboxes']['seconds']) && $data['checkboxes']['seconds']) $date_options['with_seconds'] = true;
+            }
 
-    protected function filterData($data)
-    {
-        return array_filter($data, function($item) {
-            return $item !== 'false';
-        });
-    }
+        }
 
-    protected function setDateElement(&$form, $data)
-    {
-        $date_config = $form->get('date')->getConfig();
-        $date_options = $date_config->getOptions();
 
-        if (!isset($data['seconds']) || !$data['seconds']) $date_options['with_seconds'] = FALSE;
-        if (!isset($data['minutes']) || !$data['minutes']) $date_options['with_minutes'] = FALSE;
+
+//        if (!isset($data['checkboxes']['seconds']) || !$data['checkboxes']['seconds']) $date_options['with_seconds'] = FALSE;
+
 
         // Date selector.
-        $form->add('date', get_class($date_config->getType()->getInnerType()), $date_options);
-//        $form->add('date', TextType::class, [
-//            'data' => 'sdfsdf',
-//        ]);
+        $form->add('date', $type, $date_options);
+
+//        $old_date_type = 'DateType';
+        if (array_key_exists('date', $data["date"]) && array_key_exists('time', $data["date"])) {
+            $old_date_type = DateTimeType::class;
+        }
+
+        $now_time = date('H:i:s', time());
+        list($hours, $mins, $secs) = explode(':', $now_time);
+
+        if ($old_date_type !== $type) {
+            switch ($type) {
+                case DateType::class:
+                    $data['date'] = $data['date']['date'];
+                    break;
+                case DateTimeType::class:
+                    $data['date'] = [
+                        'date' => $data['date'],
+                        'time' => [
+                            'hour' => $hours,
+//                            'minute' => $mins,
+//                            'second' => $secs,
+                        ],
+                    ];
+                    break;
+            }
+        }
+
+        if (isset($data['date']['time'])) {
+            if (!isset($data['date']['time']['minute'])) $data['date']['time']['minute'] = $mins;
+            if (!isset($data['date']['time']['second'])) $data['date']['time']['second'] = $secs;
+        }
+
+        $event->setData($data);
     }
+
+//    protected function filterData($data)
+//    {
+//        return array_filter($data, function($item) {
+//            return $item !== 'false';
+//        });
+//    }
+
+//    protected function setDateElement(&$form, $data)
+//    {
+//        $date_config = $form->get('date')->getConfig();
+//        $date_options = $date_config->getOptions();
+//
+//        if (!isset($data['seconds']) || !$data['seconds']) $date_options['with_seconds'] = FALSE;
+//        if (!isset($data['minutes']) || !$data['minutes']) $date_options['with_minutes'] = FALSE;
+//
+//        // Date selector.
+//        $form->add('date', get_class($date_config->getType()->getInnerType()), $date_options);
+////        $form->add('date', TextType::class, [
+////            'data' => 'sdfsdf',
+////        ]);
+//    }
 
 }
