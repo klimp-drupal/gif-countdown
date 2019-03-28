@@ -11,7 +11,7 @@
                 {{ form_start(form) }}
 
                 <div class="form-group form-control">
-                    {% for el in form %}
+                    {% for el in form.checkboxes %}
 
                         {% set el_type = el.vars.block_prefixes.1 %}
                         {% set el_name = el.vars.name %}
