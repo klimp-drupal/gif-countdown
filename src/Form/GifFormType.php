@@ -12,7 +12,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 
-class TestFormType extends AbstractType
+class GifFormType extends AbstractType
 {
     protected $checkboxes;
 
@@ -51,10 +51,15 @@ class TestFormType extends AbstractType
 
         $builder->add(
             $builder->create('checkboxes', FormType::class  , array('inherit_data' => true))
-                ->addEventListener(
-                    FormEvents::PRE_SUBMIT,
-                    [$this, 'onPreSubmit']
-                )
+//                ->addEventListener(
+//                    FormEvents::PRE_SUBMIT,
+//                    [$this, 'onPreSubmit']
+//                )
+//                ->addEventListener(
+//                    FormEvents::PRE_SUBMIT,
+//                    [$this, 'onCheckboxesPreSetData'],
+//                    1
+//                )
                 ->add('hours', CheckboxType::class, [
                     'required' => FALSE,
                     'label' => 'Hours'
@@ -72,25 +77,47 @@ class TestFormType extends AbstractType
         );
 
 
-//        $builder->addEventListener(
-//            FormEvents::PRE_SUBMIT,
-//            [$this, 'onPreSubmit']
-//        );
+        $builder->addEventListener(
+            FormEvents::PRE_SUBMIT,
+            [$this, 'onPreSubmitCheckboxesDataPreProcess'],
+            0
+        );
+        $builder->addEventListener(
+            FormEvents::PRE_SUBMIT,
+            [$this, 'onPreSubmit'],
+            -1
+        );
+        $builder->addEventListener(
+            FormEvents::PRE_SUBMIT,
+            [$this, 'onPreSubmitDateSet'],
+            -2
+        );
 
         // Date selector.
-//        $builder->add('date', DateTimeType::class, [
-//            'data' => new \DateTime("now"),
-//            'with_seconds' => TRUE,
-//        ]);
-        $builder->add('date', TextType::class, [
-            'data' => 'sdfsdf',
+        $builder->add('date', DateTimeType::class, [
+            'data' => new \DateTime("now"),
+            'with_seconds' => TRUE,
         ]);
+//        $builder->add('date', TextType::class, [
+//            'data' => 'sdfsdf',
+//        ]);
 
         // Timezone selector.
         $builder->add('timezone', TimezoneType::class, [
             'data' => date_default_timezone_get(),
         ]);
 
+    }
+
+    public function onPreSubmitCheckboxesDataPreProcess(FormEvent $event)
+    {
+        $data = $event->getData();
+        $new_data = [];
+        foreach ($this->checkboxes as $checkbox) {
+            $new_data[$checkbox] = isset($data['checkboxes'][$checkbox]) ? $data['checkboxes'][$checkbox] : false;
+        }
+        $data['checkboxes'] = $new_data;
+        $event->setData($data);
     }
 
     public function onFieldPreSubmit(FormEvent $event)
@@ -141,38 +168,74 @@ class TestFormType extends AbstractType
 
 //        $a = $form->get('checkboxes')->get('hours');
 
-        foreach ($data as $checkbox_field_name => &$value) {
+        $checked = '1';
+        foreach ($data['checkboxes'] as $checkbox_field_name => &$value) {
 
 //            if (!isset($this->checkboxes[$checkbox_field_name])) continue;
 
             // If a current checkbox is not checked - we alter all the following checkboxes to be unchecked.
 //            if ($value !== 'true') $alter_to_false = TRUE;
-            if ($value !== 'true' || $alter_to_false) $value = FALSE;
+            if ($value !== $checked || $alter_to_false) $value = FALSE;
 
             if ($next_checkbox_field_name = next($this->checkboxes)) {
-                $next_config = $form->get($next_checkbox_field_name)->getConfig();
+                $next_config = $form->get('checkboxes')->get($next_checkbox_field_name)->getConfig();
                 $next_options = $next_config->getOptions();
                 $next_options['disabled'] = FALSE;
 
                 // Alter all the following checkboxes to be unchecked.
-                if (!isset($value) || $value !== 'true') {
+                if (!isset($value) || $value !== $checked) {
                     $alter_to_false = TRUE;
                     $next_options['disabled'] = TRUE;
                 }
 
                 // Add the next checkbox with altered options.
-                $form->add($next_checkbox_field_name, get_class($next_config->getType()->getInnerType()), $next_options);
+                $form->get('checkboxes')->add($next_checkbox_field_name, get_class($next_config->getType()->getInnerType()), $next_options);
             }
         }
 
 ////         Keep only checked values.
 //        $data = $this->filterData($data);
-        $event->setData($data);
+//        $event->setData($data);
 //        $event->setData(['checkboxes' => $data]);
 
-        $parent_form = $form->getParent();
-        $this->setDateElement($parent_form, $data);
+//        $parent_form = $form->getParent();
+//        $this->setDateElement($parent_form, $data);
 
+//        $date_config = $parent_form->get('date')->getConfig();
+//        $date_options = $date_config->getOptions();
+//
+//        if (!isset($data['seconds']) || !$data['seconds']) $date_options['with_seconds'] = FALSE;
+//        if (!isset($data['minutes']) || !$data['minutes']) $date_options['with_minutes'] = FALSE;
+//
+//        // Date selector.
+//        $form->add('date', get_class($date_config->getType()->getInnerType()), $date_options);
+
+//        $form->add('date', TextType::class, [
+//            'data' => 'sdfsdf',
+//        ]);
+
+//        $data['date'] = '111111';
+
+//        $event->setData($data);
+
+        $a = 1;
+
+    }
+
+    public function onPreSubmitDateSet(FormEvent $event)
+    {
+        $a = 1;
+        $form = $event->getForm();
+        $data = $event->getData();
+
+        $date_config = $form->get('date')->getConfig();
+        $date_options = $date_config->getOptions();
+
+        if (!isset($data['checkboxes']['seconds']) || !$data['checkboxes']['seconds']) $date_options['with_seconds'] = FALSE;
+        if (!isset($data['checkboxes']['minutes']) || !$data['checkboxes']['minutes']) $date_options['with_minutes'] = FALSE;
+
+        // Date selector.
+        $form->add('date', get_class($date_config->getType()->getInnerType()), $date_options);
     }
 
     protected function filterData($data)
@@ -191,10 +254,10 @@ class TestFormType extends AbstractType
         if (!isset($data['minutes']) || !$data['minutes']) $date_options['with_minutes'] = FALSE;
 
         // Date selector.
-//        $form->add('date', get_class($date_config->getType()->getInnerType()), $date_options);
-        $form->add('date', TextType::class, [
-            'data' => 'sdfsdf',
-        ]);
+        $form->add('date', get_class($date_config->getType()->getInnerType()), $date_options);
+//        $form->add('date', TextType::class, [
+//            'data' => 'sdfsdf',
+//        ]);
     }
 
 }

@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Form\TestFormType;
+use App\Form\GifFormType;
 use App\Service\GifHelper;
 use GifCreator\GifCreator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -67,7 +67,7 @@ class GifController extends AbstractController
      */
     public function form(Request $request)
     {
-        $form = $this->createForm(TestFormType::class);
+        $form = $this->createForm(GifFormType::class);
 
         // If the form is submitted.
         $form->handleRequest($request);
