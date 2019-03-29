@@ -41,7 +41,7 @@ class GifFormType extends AbstractType
     /**
      * @param null $ajax
      */
-    public function setAjax($ajax): void
+    public function setAjax($ajax)
     {
         $this->ajax = $ajax;
     }
@@ -51,7 +51,7 @@ class GifFormType extends AbstractType
      *
      * @param \Symfony\Component\OptionsResolver\OptionsResolver $resolver
      */
-    public function configureOptions( OptionsResolver $resolver ) {
+    public function configureOptions(OptionsResolver $resolver) {
         $resolver->setDefaults( [
             'ajax' => null,
         ] );

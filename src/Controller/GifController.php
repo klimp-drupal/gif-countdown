@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Form\GifFormType;
 use App\Service\GifHelper;
-use GifCreator\GifCreator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -25,36 +24,13 @@ class GifController extends AbstractController
      */
     public function gif(Request $request, GifHelper $gifHelper)
     {
-        // TODO: to params.
-        $timeframe = 10 * 60; // sec
+        $gif = $gifHelper->createGif(
+            $request->query->get('timezone'),
+            $request->query->get('date'),
+            $request->query->get('countdown_format')
+        );
 
-        // TODO: if params are empty.
-        $timezone = new \DateTimeZone($request->query->get('timezone'));
-
-        $countdown_format = $request->query->get('countdown_format');
-
-        $date_to = new \DateTime($request->query->get('date'), $timezone);
-        $now = new \DateTime(date('r', time()));
-
-        $frames = [];
-        $durations = [];
-
-        for ($i = 0; $i <= $timeframe; $i++) {
-
-            // Generate the text.
-            $text = $gifHelper->generateText($date_to, $now, $countdown_format);
-
-            // Create an image.
-            $frames[] = $gifHelper->createImage($text);
-            $durations[] = 60;
-
-            $now->modify('+1 second');
-        }
-
-        // Create a gif.
-        $gc = new GifCreator();
-        $gc->create($frames, $durations);
-        echo $gc->getGif();
+        echo $gif->getGif();
 
     }
 
@@ -69,7 +45,8 @@ class GifController extends AbstractController
      */
     public function form(Request $request, GifHelper $gifHelper)
     {
-        $form = $this->createGifForm($request)->handleRequest($request);;
+        $form = $this->createForm(GifFormType::class, null, ['ajax' => $request->isXmlHttpRequest()]);
+        $form->handleRequest($request);
 
         // If the form is submitted.
         if ($form->isSubmitted() && $form->isValid()) {
@@ -104,22 +81,12 @@ class GifController extends AbstractController
      */
     public function formDateWidgetAjaxCallback(Request $request)
     {
-        $form = $this->createGifForm($request)->handleRequest($request);
+        $form = $this->createForm(GifFormType::class, null, ['ajax' => $request->isXmlHttpRequest()]);
+        $form->handleRequest($request);
+
         return $this->render('gif/form/date-widget.html.twig', [
             'form' => $form->createView(),
         ]);
-    }
-
-    /**
-     * Helper to create the form.
-     *
-     * @param \Symfony\Component\HttpFoundation\Request $request
-     *
-     * @return \Symfony\Component\Form\FormInterface
-     */
-    protected function createGifForm(Request $request)
-    {
-        return $this->createForm(GifFormType::class, null, ['ajax' => $request->isXmlHttpRequest()]);
     }
 
 }
