@@ -31,6 +31,8 @@ class GifController extends AbstractController
         // TODO: if params are empty.
         $timezone = new \DateTimeZone($request->query->get('timezone'));
 
+        $countdown_format = $request->query->get('countdown_format');
+
         $date_to = new \DateTime($request->query->get('date'), $timezone);
         $now = new \DateTime(date('r', time()));
 
@@ -40,7 +42,7 @@ class GifController extends AbstractController
         for ($i = 0; $i <= $timeframe; $i++) {
 
             // Generate the text.
-            $text = $gifHelper->generateText($date_to, $now);
+            $text = $gifHelper->generateText($date_to, $now, $countdown_format);
 
             // Create an image.
             $frames[] = $gifHelper->createImage($text);
@@ -65,12 +67,11 @@ class GifController extends AbstractController
      * @return \Symfony\Component\HttpFoundation\Response
      *   Response object.
      */
-    public function form(Request $request)
+    public function form(Request $request, GifHelper $gifHelper)
     {
-        $form = $this->createForm(GifFormType::class);
+        $form = $this->createGifForm($request)->handleRequest($request);;
 
         // If the form is submitted.
-        $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
 
             // Generate an absolute URL-string.
@@ -79,16 +80,46 @@ class GifController extends AbstractController
                 [
                     'date' => $form->get('date')->getData()->format('Y-m-d H:i:s'),
                     'timezone' => $form->get('timezone')->getData(),
+                    'countdown_format' => $gifHelper->getCountdownFormat($form->getData())
                 ],
                 UrlGeneratorInterface::ABSOLUTE_URL
             );
             $embed_code = "<img src='{$url}'>";
         }
 
-        return $this->render('test/gif-form.html.twig', [
+        return $this->render('gif/gif-form-page.html.twig', [
             'form' => $form->createView(),
-            'embed_code' => isset($embed_code) ? $embed_code : NULL
+            'embed_code' => isset($embed_code) ? $embed_code : NULL,
         ]);
+    }
+
+    /**
+     * @Route("/_form-date-widget-ajax-callback", name="form_date_widget_ajax_callback")
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   Request object.
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     *   Response object.
+     */
+    public function formDateWidgetAjaxCallback(Request $request)
+    {
+        $form = $this->createGifForm($request)->handleRequest($request);
+        return $this->render('gif/form/date-widget.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+
+    /**
+     * Helper to create the form.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *
+     * @return \Symfony\Component\Form\FormInterface
+     */
+    protected function createGifForm(Request $request)
+    {
+        return $this->createForm(GifFormType::class, null, ['ajax' => $request->isXmlHttpRequest()]);
     }
 
 }

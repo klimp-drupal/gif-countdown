@@ -11,11 +11,24 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class GifFormType extends AbstractType
 {
+
+    /**
+     * @var array
+     */
     protected $checkboxes;
 
+    /**
+     * @var null
+     */
+    protected $ajax = null;
+
+    /**
+     * GifFormType constructor.
+     */
     public function __construct()
     {
         $this->checkboxes = [
@@ -25,12 +38,45 @@ class GifFormType extends AbstractType
         ];
     }
 
+    /**
+     * @param null $ajax
+     */
+    public function setAjax($ajax): void
+    {
+        $this->ajax = $ajax;
+    }
+
+    /**
+     * @link https://stackoverflow.com/questions/36999017/symfony-3-createform-with-construct-parameters
+     *
+     * @param \Symfony\Component\OptionsResolver\OptionsResolver $resolver
+     */
+    public function configureOptions( OptionsResolver $resolver ) {
+        $resolver->setDefaults( [
+            'ajax' => null,
+        ] );
+    }
+
+    /**
+     * Creates date widget default options.
+     *
+     * @return array
+     */
+    protected function createDateOptions()
+    {
+        return [
+            'data' => new \DateTime("now"),
+        ];
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        // Set up ajax value for further use in the events.
+        $this->setAjax($options['ajax']);
 
         // Checkboxes.
         $builder->add(
-            $builder->create('checkboxes', FormType::class  , array('inherit_data' => true))
+            $builder->create('checkboxes', FormType::class, array('inherit_data' => true))
                 ->add('hours', CheckboxType::class, [
                     'required' => FALSE,
                     'label' => 'Hours'
@@ -69,9 +115,7 @@ class GifFormType extends AbstractType
         );
 
         // Date selector.
-        $builder->add('date', DateType::class, [
-            'data' => new \DateTime("now"),
-        ]);
+        $builder->add('date', DateType::class, $this->createDateOptions());
 
         // Timezone selector.
         $builder->add('timezone', TimezoneType::class, [
@@ -104,15 +148,16 @@ class GifFormType extends AbstractType
     public function onPreSubmitUpdateCheckboxes(FormEvent $event)
     {
         $form = $event->getForm();
+        $data = $event->getData();
 
-        // Data contains only checkboxes.
-        // If none of them was triggered - data is empty
-        // but the form still needs to be processed.
-        if (empty($data = $event->getData())) return;
+        // Flag to alter all the following checkboxes to unchecked.
         $alter_to_false = FALSE;
+
+        // Value if checked.
         $checked = '1';
         foreach ($data['checkboxes'] as $checkbox_field_name => &$value) {
 
+            // e.g. if Hours is unchecked, uncheck Minutes and Seconds anyway.
             if ($value !== $checked || $alter_to_false) $value = FALSE;
 
             // TODO: check that next() works.
@@ -122,7 +167,7 @@ class GifFormType extends AbstractType
                 $next_options['disabled'] = FALSE;
 
                 // Alter all the following checkboxes to be unchecked.
-                if (!isset($value) || $value !== $checked) {
+                if ($value !== $checked) {
                     $alter_to_false = TRUE;
                     $next_options['disabled'] = TRUE;
                 }
@@ -139,21 +184,28 @@ class GifFormType extends AbstractType
      *
      * @param \Symfony\Component\Form\FormEvent $event
      */
-    public function onPreSubmitAlterDateWidget(FormEvent $event)
+    public function onPreSubmitAlterDateWidget(FormEvent $event/*, $a, $b*/)
     {
         $form = $event->getForm();
         $data = $event->getData();
 
-        $date_options = [
-            'data' => new \DateTime("now"),
-        ];
+        // Date default options.
+        $date_options = $this->createDateOptions();
 
+        // Default type of the Date widget.
         $old_date_type = $type = DateType::class;
+
+        // If $data contains both 'date' and 'time' keys - old widget type is DateTimeType.
+        if (array_key_exists('date', $data["date"]) && array_key_exists('time', $data["date"])) {
+            $old_date_type = DateTimeType::class;
+        }
+
+        // If Hours are set - change DateType to DateTimeType.
         if (isset($data['checkboxes']['hours']) && $data['checkboxes']['hours']) {
             $type = DateTimeType::class;
+
             $date_options['with_minutes'] = false;
             $date_options['with_seconds'] = false;
-
             if (isset($data['checkboxes']['minutes']) && $data['checkboxes']['minutes']) {
                 $date_options['with_minutes'] = true;
                 if (isset($data['checkboxes']['seconds']) && $data['checkboxes']['seconds']) $date_options['with_seconds'] = true;
@@ -164,13 +216,11 @@ class GifFormType extends AbstractType
         // Date selector.
         $form->add('date', $type, $date_options);
 
-        if (array_key_exists('date', $data["date"]) && array_key_exists('time', $data["date"])) {
-            $old_date_type = DateTimeType::class;
-        }
-
+        // Get current time.
         $now_time = date('H:i:s', time());
         list($hours, $mins, $secs) = explode(':', $now_time);
 
+        // If the widget has changed.
         if ($old_date_type !== $type) {
             switch ($type) {
                 case DateType::class:
@@ -187,7 +237,8 @@ class GifFormType extends AbstractType
             }
         }
 
-        if (isset($data['date']['time'])) {
+        // We need this options to be set up only while ajax calls.
+        if (isset($data['date']['time']) && $this->ajax) {
             if (!isset($data['date']['time']['minute'])) $data['date']['time']['minute'] = $mins;
             if (!isset($data['date']['time']['second'])) $data['date']['time']['second'] = $secs;
         }

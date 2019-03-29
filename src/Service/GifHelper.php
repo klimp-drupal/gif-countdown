@@ -95,19 +95,39 @@ class GifHelper
     }
 
     /**
+     * Gets countdown format.
+     *
+     * @param $form_data
+     *   Form data array.
+     *
+     * @return string
+     *   Countdown format string.
+     */
+    public function getCountdownFormat($form_data)
+    {
+        $format = '%a';
+        if (isset($form_data['hours']) && $form_data['hours']) $format .= ':%H';
+        if (isset($form_data['minutes']) && $form_data['minutes']) $format .= ':%I';
+        if (isset($form_data['seconds']) && $form_data['seconds']) $format .= ':%S';
+        return $format;
+    }
+
+    /**
      * Generates text for each GIF frame.
      *
      * @param \DateTime $date_to
      *   Date to countdown.
      * @param \DateTime $now
      *   Current date.
+     * @param string $countdown_format
+     *   Countdown format.
      *
      * @return string
      */
-    public function generateText($date_to, $now)
+    public function generateText($date_to, $now, $countdown_format)
     {
         $interval = date_diff($date_to, $now);
-        $format = $date_to > $now ? '%a:%H:%I:%S' : '00:00:00:00';
+        $format = $date_to > $now ? $countdown_format : '00:00:00:00';
         $text = $interval->format($format);
         if(preg_match('/^[0-9]\:/', $text)){
             $text = '0'.$text;
