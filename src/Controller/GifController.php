@@ -31,11 +31,9 @@ class GifController extends AbstractController
         // TODO: if params are empty.
         $timezone = new \DateTimeZone($request->query->get('timezone'));
 
-        $date_val = $request->query->get('date');
-//        $countdown_format = $gifHelper->getCountdownFormat($date_val);
         $countdown_format = $request->query->get('countdown_format');
 
-        $date_to = new \DateTime($date_val, $timezone);
+        $date_to = new \DateTime($request->query->get('date'), $timezone);
         $now = new \DateTime(date('r', time()));
 
         $frames = [];
@@ -75,14 +73,6 @@ class GifController extends AbstractController
 
         // If the form is submitted.
         if ($form->isSubmitted() && $form->isValid()) {
-
-//            $hours = $form->get('checkboxes')->get('hours')->getData();
-//            $minutes = $form->get('checkboxes')->get('minutes')->getData();
-//            $seconds = $form->get('checkboxes')->get('seconds')->getData();
-
-//            $a = 1;
-
-//            $format = $this->getCountdownFormat($date_value);
 
             // Generate an absolute URL-string.
             $url = $this->generateUrl(

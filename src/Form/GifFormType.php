@@ -15,8 +15,15 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class GifFormType extends AbstractType
 {
+
+    /**
+     * @var array
+     */
     protected $checkboxes;
 
+    /**
+     * @var null
+     */
     protected $ajax = null;
 
     /**
@@ -50,11 +57,15 @@ class GifFormType extends AbstractType
         ] );
     }
 
+    /**
+     * Creates date widget default options.
+     *
+     * @return array
+     */
     protected function createDateOptions()
     {
         return [
             'data' => new \DateTime("now"),
-//            'format' => 'YYYY-MM-dd HH:mm:ss',
         ];
     }
 

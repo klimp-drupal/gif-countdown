@@ -94,19 +94,15 @@ class GifHelper
         $this->colorBlue = $color_blue;
     }
 
-//    public function getCountdownFormat($date_value)
-//    {
-//        $date_arr = explode(' ', $date_value);
-//        list($hours, $mins, $secs) = explode(':', $date_arr[1]);
-//
-//        $format = '%a';
-//        if($hours != '00') $format .= ':%H';
-//        if($mins != '00') $format .= ':%I';
-//        if($secs != '00') $format .= ':%S';
-//
-//        return $format;
-//    }
-
+    /**
+     * Gets countdown format.
+     *
+     * @param $form_data
+     *   Form data array.
+     *
+     * @return string
+     *   Countdown format string.
+     */
     public function getCountdownFormat($form_data)
     {
         $format = '%a';
@@ -123,13 +119,14 @@ class GifHelper
      *   Date to countdown.
      * @param \DateTime $now
      *   Current date.
+     * @param string $countdown_format
+     *   Countdown format.
      *
      * @return string
      */
     public function generateText($date_to, $now, $countdown_format)
     {
         $interval = date_diff($date_to, $now);
-//        $format = $date_to > $now ? '%a:%H:%I:%S' : '00:00:00:00';
         $format = $date_to > $now ? $countdown_format : '00:00:00:00';
         $text = $interval->format($format);
         if(preg_match('/^[0-9]\:/', $text)){
