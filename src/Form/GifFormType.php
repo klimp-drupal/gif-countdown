@@ -54,6 +54,7 @@ class GifFormType extends AbstractType
     {
         return [
             'data' => new \DateTime("now"),
+//            'format' => 'YYYY-MM-dd HH:mm:ss',
         ];
     }
 
@@ -64,7 +65,7 @@ class GifFormType extends AbstractType
 
         // Checkboxes.
         $builder->add(
-            $builder->create('checkboxes', FormType::class  , array('inherit_data' => true))
+            $builder->create('checkboxes', FormType::class, array('inherit_data' => true))
                 ->add('hours', CheckboxType::class, [
                     'required' => FALSE,
                     'label' => 'Hours'

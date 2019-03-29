@@ -31,7 +31,11 @@ class GifController extends AbstractController
         // TODO: if params are empty.
         $timezone = new \DateTimeZone($request->query->get('timezone'));
 
-        $date_to = new \DateTime($request->query->get('date'), $timezone);
+        $date_val = $request->query->get('date');
+//        $countdown_format = $gifHelper->getCountdownFormat($date_val);
+        $countdown_format = $request->query->get('countdown_format');
+
+        $date_to = new \DateTime($date_val, $timezone);
         $now = new \DateTime(date('r', time()));
 
         $frames = [];
@@ -40,7 +44,7 @@ class GifController extends AbstractController
         for ($i = 0; $i <= $timeframe; $i++) {
 
             // Generate the text.
-            $text = $gifHelper->generateText($date_to, $now);
+            $text = $gifHelper->generateText($date_to, $now, $countdown_format);
 
             // Create an image.
             $frames[] = $gifHelper->createImage($text);
@@ -65,12 +69,20 @@ class GifController extends AbstractController
      * @return \Symfony\Component\HttpFoundation\Response
      *   Response object.
      */
-    public function form(Request $request)
+    public function form(Request $request, GifHelper $gifHelper)
     {
         $form = $this->createGifForm($request)->handleRequest($request);;
 
         // If the form is submitted.
         if ($form->isSubmitted() && $form->isValid()) {
+
+//            $hours = $form->get('checkboxes')->get('hours')->getData();
+//            $minutes = $form->get('checkboxes')->get('minutes')->getData();
+//            $seconds = $form->get('checkboxes')->get('seconds')->getData();
+
+//            $a = 1;
+
+//            $format = $this->getCountdownFormat($date_value);
 
             // Generate an absolute URL-string.
             $url = $this->generateUrl(
@@ -78,6 +90,7 @@ class GifController extends AbstractController
                 [
                     'date' => $form->get('date')->getData()->format('Y-m-d H:i:s'),
                     'timezone' => $form->get('timezone')->getData(),
+                    'countdown_format' => $gifHelper->getCountdownFormat($form->getData())
                 ],
                 UrlGeneratorInterface::ABSOLUTE_URL
             );
