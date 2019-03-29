@@ -50,6 +50,13 @@ class GifFormType extends AbstractType
         ] );
     }
 
+    protected function createDateOptions()
+    {
+        return [
+            'data' => new \DateTime("now"),
+        ];
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         // Set up ajax value for further use in the events.
@@ -96,9 +103,7 @@ class GifFormType extends AbstractType
         );
 
         // Date selector.
-        $builder->add('date', DateType::class, [
-            'data' => new \DateTime("now"),
-        ]);
+        $builder->add('date', DateType::class, $this->createDateOptions());
 
         // Timezone selector.
         $builder->add('timezone', TimezoneType::class, [
@@ -131,15 +136,16 @@ class GifFormType extends AbstractType
     public function onPreSubmitUpdateCheckboxes(FormEvent $event)
     {
         $form = $event->getForm();
+        $data = $event->getData();
 
-        // Data contains only checkboxes.
-        // If none of them was triggered - data is empty
-        // but the form still needs to be processed.
-        if (empty($data = $event->getData())) return;
+        // Flag to alter all the following checkboxes to unchecked.
         $alter_to_false = FALSE;
+
+        // Value if checked.
         $checked = '1';
         foreach ($data['checkboxes'] as $checkbox_field_name => &$value) {
 
+            // e.g. if Hours is unchecked, uncheck Minutes and Seconds anyway.
             if ($value !== $checked || $alter_to_false) $value = FALSE;
 
             // TODO: check that next() works.
@@ -149,7 +155,7 @@ class GifFormType extends AbstractType
                 $next_options['disabled'] = FALSE;
 
                 // Alter all the following checkboxes to be unchecked.
-                if (!isset($value) || $value !== $checked) {
+                if ($value !== $checked) {
                     $alter_to_false = TRUE;
                     $next_options['disabled'] = TRUE;
                 }
@@ -171,16 +177,23 @@ class GifFormType extends AbstractType
         $form = $event->getForm();
         $data = $event->getData();
 
-        $date_options = [
-            'data' => new \DateTime("now"),
-        ];
+        // Date default options.
+        $date_options = $this->createDateOptions();
 
+        // Default type of the Date widget.
         $old_date_type = $type = DateType::class;
+
+        // If $data contains both 'date' and 'time' keys - old widget type is DateTimeType.
+        if (array_key_exists('date', $data["date"]) && array_key_exists('time', $data["date"])) {
+            $old_date_type = DateTimeType::class;
+        }
+
+        // If Hours are set - change DateType to DateTimeType.
         if (isset($data['checkboxes']['hours']) && $data['checkboxes']['hours']) {
             $type = DateTimeType::class;
+
             $date_options['with_minutes'] = false;
             $date_options['with_seconds'] = false;
-
             if (isset($data['checkboxes']['minutes']) && $data['checkboxes']['minutes']) {
                 $date_options['with_minutes'] = true;
                 if (isset($data['checkboxes']['seconds']) && $data['checkboxes']['seconds']) $date_options['with_seconds'] = true;
@@ -191,13 +204,11 @@ class GifFormType extends AbstractType
         // Date selector.
         $form->add('date', $type, $date_options);
 
-        if (array_key_exists('date', $data["date"]) && array_key_exists('time', $data["date"])) {
-            $old_date_type = DateTimeType::class;
-        }
-
+        // Get current time.
         $now_time = date('H:i:s', time());
         list($hours, $mins, $secs) = explode(':', $now_time);
 
+        // If the widget has changed.
         if ($old_date_type !== $type) {
             switch ($type) {
                 case DateType::class:
