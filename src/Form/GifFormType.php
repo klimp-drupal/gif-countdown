@@ -11,10 +11,21 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class GifFormType extends AbstractType
 {
     protected $checkboxes;
+
+    protected $ajax = null;
+
+    /**
+     * @param null $ajax
+     */
+    public function setAjax($ajax): void
+    {
+        $this->ajax = $ajax;
+    }
 
     public function __construct()
     {
@@ -25,8 +36,21 @@ class GifFormType extends AbstractType
         ];
     }
 
+    /**
+     * @link https://stackoverflow.com/questions/36999017/symfony-3-createform-with-construct-parameters
+     *
+     * @param \Symfony\Component\OptionsResolver\OptionsResolver $resolver
+     */
+    public function configureOptions( OptionsResolver $resolver ) {
+        $resolver->setDefaults( [
+            'ajax' => null,
+        ] );
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        $a = 1;
+        $this->setAjax($options['ajax']);
 
         // Checkboxes.
         $builder->add(
@@ -139,7 +163,7 @@ class GifFormType extends AbstractType
      *
      * @param \Symfony\Component\Form\FormEvent $event
      */
-    public function onPreSubmitAlterDateWidget(FormEvent $event)
+    public function onPreSubmitAlterDateWidget(FormEvent $event/*, $a, $b*/)
     {
         $form = $event->getForm();
         $data = $event->getData();
@@ -187,7 +211,8 @@ class GifFormType extends AbstractType
             }
         }
 
-        if (isset($data['date']['time'])) {
+        // We need this options to be set up only while ajax calls.
+        if (isset($data['date']['time']) && $this->ajax) {
             if (!isset($data['date']['time']['minute'])) $data['date']['time']['minute'] = $mins;
             if (!isset($data['date']['time']['second'])) $data['date']['time']['second'] = $secs;
         }

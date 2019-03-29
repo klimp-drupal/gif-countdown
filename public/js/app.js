@@ -8,7 +8,7 @@ $(document).on('change', selectors, function() {
   var $target_selectors = $triggered.nextAll('input');
 
   $.ajax({
-    url : $form.attr('action'),
+    url : "/_form-date-widget-ajax-callback",
     type: $form.attr('method'),
     data: $form.serialize(),
 

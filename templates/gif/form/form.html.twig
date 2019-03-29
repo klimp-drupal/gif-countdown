@@ -2,28 +2,7 @@
 
     {{ form_errors(form) }}
 
-    <div class="form-group form-control">
-        {% for el in form.checkboxes %}
-
-            {% set el_type = el.vars.block_prefixes.1 %}
-            {% set el_name = el.vars.name %}
-            {% if el_type == 'checkbox' %}
-
-                {{ form_label(el) }}
-                {{ form_widget(el, {
-                    'attr': {
-                        'autocomplete': 'off',
-                    }
-                }) }}
-
-            {% endif %}
-        {% endfor %}
-    </div>
-
-    {{ form_widget(form.date, { 'attr': {
-        'autocomplete': 'off',
-        'class': 'form-group'
-    } }) }}
+    {{ include('gif/form/date-widget.html.twig') }}
 
     <div class="form-group">
         {{ form_widget(form.timezone, { 'attr': {
