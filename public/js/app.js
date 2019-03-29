@@ -32,7 +32,7 @@ $(document).on('change', selectors, function() {
         );
       });
 
-      // console.log(html);
+      console.log(html);
       $('#gif_form_date').replaceWith(
         $(html).find('#gif_form_date')
       );
