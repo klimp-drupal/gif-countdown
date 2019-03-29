@@ -85,7 +85,7 @@ class GifController extends AbstractController
             $embed_code = "<img src='{$url}'>";
         }
 
-        return $this->render('test/gif-form.html.twig', [
+        return $this->render('gif/gif-form-page.html.twig', [
             'form' => $form->createView(),
             'embed_code' => isset($embed_code) ? $embed_code : NULL
         ]);

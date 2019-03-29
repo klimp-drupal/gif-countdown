@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}GIF Countdown Generator{% endblock %}
+
+{% block body %}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 col-md-8">
+                <div id="gif-form">
+                    {{ include('gif/gif-form.html.twig', {'embed_code': embed_code}) }}
+                </div>
+            </div>
+        </div>
+  </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/app.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,48 @@
+{{ form_start(form) }}
+
+    {{ form_errors(form) }}
+
+    <div class="form-group form-control">
+        {% for el in form.checkboxes %}
+
+            {% set el_type = el.vars.block_prefixes.1 %}
+            {% set el_name = el.vars.name %}
+            {% if el_type == 'checkbox' %}
+
+                {{ form_label(el) }}
+                {{ form_widget(el, {
+                    'attr': {
+                        'autocomplete': 'off',
+                    }
+                }) }}
+
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    {{ form_widget(form.date, { 'attr': {
+        'autocomplete': 'off',
+        'class': 'form-group'
+    } }) }}
+
+    <div class="form-group">
+        {{ form_widget(form.timezone, { 'attr': {
+            'autocomplete': 'off',
+            'class': 'form-control'
+        } }) }}
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Go</button>
+    </div>
+
+    {% if embed_code %}
+        <div class="form-group">
+            <textarea class="form-control" rows="10" cols="50">{{ embed_code }}</textarea>
+        </div>
+        <div class="form-group">
+            {{ embed_code | raw }}
+        </div>
+    {% endif %}
+
+{{ form_end(form) }}
