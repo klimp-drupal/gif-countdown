@@ -8,7 +8,6 @@ use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TimezoneType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -28,39 +27,10 @@ class GifFormType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-//        $checkbox_options = [
-//            'required' => FALSE,
-//            'disabled' => TRUE,
-//        ];
-//
-//        $first_checkbox = reset($this->checkboxes);
-//        foreach ($this->checkboxes as $field_name) {
-//            $checkbox_options['label'] = ucwords($field_name);
-//
-//            // The first checkbox is always enabled.
-//            if ($field_name == $first_checkbox) $checkbox_options['disabled'] = FALSE;
-//
-//            // Add a checkbox.
-//            $builder->add($field_name, CheckboxType::class, $checkbox_options);
-//
-////            $builder->get($field_name)->addEventListener(
-////                FormEvents::PRE_SUBMIT,
-////                [$this, 'onFieldPreSubmit']
-////            );
-//
-//        }
 
+        // Checkboxes.
         $builder->add(
             $builder->create('checkboxes', FormType::class  , array('inherit_data' => true))
-//                ->addEventListener(
-//                    FormEvents::PRE_SUBMIT,
-//                    [$this, 'onPreSubmit']
-//                )
-//                ->addEventListener(
-//                    FormEvents::PRE_SUBMIT,
-//                    [$this, 'onCheckboxesPreSetData'],
-//                    1
-//                )
                 ->add('hours', CheckboxType::class, [
                     'required' => FALSE,
                     'label' => 'Hours'
@@ -77,20 +47,24 @@ class GifFormType extends AbstractType
                 ])
         );
 
-
+        // Preprocess the checkboxes data.
         $builder->addEventListener(
             FormEvents::PRE_SUBMIT,
             [$this, 'onPreSubmitCheckboxesDataPreProcess'],
             0
         );
+
+        // Update the checkboxes.
         $builder->addEventListener(
             FormEvents::PRE_SUBMIT,
-            [$this, 'onPreSubmit'],
+            [$this, 'onPreSubmitUpdateCheckboxes'],
             -1
         );
+
+        // Alter the Date widget.
         $builder->addEventListener(
             FormEvents::PRE_SUBMIT,
-            [$this, 'onPreSubmitDateSet'],
+            [$this, 'onPreSubmitAlterDateWidget'],
             -2
         );
 
@@ -98,13 +72,6 @@ class GifFormType extends AbstractType
         $builder->add('date', DateType::class, [
             'data' => new \DateTime("now"),
         ]);
-//        $builder->add('date', DateTimeType::class, [
-//            'data' => new \DateTime("now"),
-//        ]);
-
-//        $builder->add('date', TextType::class, [
-//            'data' => 'sdfsdf',
-//        ]);
 
         // Timezone selector.
         $builder->add('timezone', TimezoneType::class, [
@@ -113,6 +80,11 @@ class GifFormType extends AbstractType
 
     }
 
+    /**
+     * Populate unset checkboxes with false value.
+     *
+     * @param \Symfony\Component\Form\FormEvent $event
+     */
     public function onPreSubmitCheckboxesDataPreProcess(FormEvent $event)
     {
         $data = $event->getData();
@@ -124,40 +96,12 @@ class GifFormType extends AbstractType
         $event->setData($data);
     }
 
-//    public function onFieldPreSubmit(FormEvent $event)
-//    {
-//        $el_form = $event->getForm();
-//        $form = $el_form->getParent();
-//        $value = $event->getData();
-//        $name = $el_form->getName();
-//
-//        $q = 1;
-//
-//        if ($next_checkbox_field_name = $this->getNextCheckbox($name)) {
-//            $next_config = $form->get($next_checkbox_field_name)->getConfig();
-//            $next_options = $next_config->getOptions();
-//            $next_options['disabled'] = FALSE;
-//
-//            // Alter all the following checkboxes to be unchecked.
-//            if (!isset($value) || $value !== 'true') {
-//                $next_options['disabled'] = TRUE;
-//            }
-//
-//            // Add the next checkbox with altered options.
-//            $form->add($next_checkbox_field_name, get_class($next_config->getType()->getInnerType()), $next_options);
-//        }
-//    }
-//
-//    protected function getNextCheckbox($current)
-//    {
-//        foreach ($this->checkboxes as $index => $item) {
-//            if ($item == $current) {
-//                return isset($this->checkboxes[$index + 1]) ? $this->checkboxes[$index + 1]: FALSE;
-//            }
-//        }
-//    }
-
-    public function onPreSubmit(FormEvent $event)
+    /**
+     * Updates the checkboxes.
+     *
+     * @param \Symfony\Component\Form\FormEvent $event
+     */
+    public function onPreSubmitUpdateCheckboxes(FormEvent $event)
     {
         $form = $event->getForm();
 
@@ -165,20 +109,10 @@ class GifFormType extends AbstractType
         // If none of them was triggered - data is empty
         // but the form still needs to be processed.
         if (empty($data = $event->getData())) return;
-
-//        $data = $data['checkboxes'];
-
         $alter_to_false = FALSE;
-
-//        $a = $form->get('checkboxes')->get('hours');
-
         $checked = '1';
         foreach ($data['checkboxes'] as $checkbox_field_name => &$value) {
 
-//            if (!isset($this->checkboxes[$checkbox_field_name])) continue;
-
-            // If a current checkbox is not checked - we alter all the following checkboxes to be unchecked.
-//            if ($value !== 'true') $alter_to_false = TRUE;
             if ($value !== $checked || $alter_to_false) $value = FALSE;
 
             // TODO: check that next() works.
@@ -198,36 +132,14 @@ class GifFormType extends AbstractType
             }
         }
 
-////         Keep only checked values.
-//        $data = $this->filterData($data);
-//        $event->setData($data);
-//        $event->setData(['checkboxes' => $data]);
-
-//        $parent_form = $form->getParent();
-//        $this->setDateElement($parent_form, $data);
-
-//        $date_config = $parent_form->get('date')->getConfig();
-//        $date_options = $date_config->getOptions();
-//
-//        if (!isset($data['seconds']) || !$data['seconds']) $date_options['with_seconds'] = FALSE;
-//        if (!isset($data['minutes']) || !$data['minutes']) $date_options['with_minutes'] = FALSE;
-//
-//        // Date selector.
-//        $form->add('date', get_class($date_config->getType()->getInnerType()), $date_options);
-
-//        $form->add('date', TextType::class, [
-//            'data' => 'sdfsdf',
-//        ]);
-
-//        $data['date'] = '111111';
-
-//        $event->setData($data);
-
-//        $a = 1;
-
     }
 
-    public function onPreSubmitDateSet(FormEvent $event)
+    /**
+     * Alter the date widget.
+     *
+     * @param \Symfony\Component\Form\FormEvent $event
+     */
+    public function onPreSubmitAlterDateWidget(FormEvent $event)
     {
         $form = $event->getForm();
         $data = $event->getData();
@@ -249,15 +161,9 @@ class GifFormType extends AbstractType
 
         }
 
-
-
-//        if (!isset($data['checkboxes']['seconds']) || !$data['checkboxes']['seconds']) $date_options['with_seconds'] = FALSE;
-
-
         // Date selector.
         $form->add('date', $type, $date_options);
 
-//        $old_date_type = 'DateType';
         if (array_key_exists('date', $data["date"]) && array_key_exists('time', $data["date"])) {
             $old_date_type = DateTimeType::class;
         }
@@ -275,8 +181,6 @@ class GifFormType extends AbstractType
                         'date' => $data['date'],
                         'time' => [
                             'hour' => $hours,
-//                            'minute' => $mins,
-//                            'second' => $secs,
                         ],
                     ];
                     break;
@@ -290,27 +194,5 @@ class GifFormType extends AbstractType
 
         $event->setData($data);
     }
-
-//    protected function filterData($data)
-//    {
-//        return array_filter($data, function($item) {
-//            return $item !== 'false';
-//        });
-//    }
-
-//    protected function setDateElement(&$form, $data)
-//    {
-//        $date_config = $form->get('date')->getConfig();
-//        $date_options = $date_config->getOptions();
-//
-//        if (!isset($data['seconds']) || !$data['seconds']) $date_options['with_seconds'] = FALSE;
-//        if (!isset($data['minutes']) || !$data['minutes']) $date_options['with_minutes'] = FALSE;
-//
-//        // Date selector.
-//        $form->add('date', get_class($date_config->getType()->getInnerType()), $date_options);
-////        $form->add('date', TextType::class, [
-////            'data' => 'sdfsdf',
-////        ]);
-//    }
 
 }
