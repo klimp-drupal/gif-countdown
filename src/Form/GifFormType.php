@@ -20,13 +20,8 @@ class GifFormType extends AbstractType
     protected $ajax = null;
 
     /**
-     * @param null $ajax
+     * GifFormType constructor.
      */
-    public function setAjax($ajax): void
-    {
-        $this->ajax = $ajax;
-    }
-
     public function __construct()
     {
         $this->checkboxes = [
@@ -34,6 +29,14 @@ class GifFormType extends AbstractType
             'minutes',
             'seconds'
         ];
+    }
+
+    /**
+     * @param null $ajax
+     */
+    public function setAjax($ajax): void
+    {
+        $this->ajax = $ajax;
     }
 
     /**
@@ -49,7 +52,7 @@ class GifFormType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $a = 1;
+        // Set up ajax value for further use in the events.
         $this->setAjax($options['ajax']);
 
         // Checkboxes.

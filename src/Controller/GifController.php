@@ -67,10 +67,9 @@ class GifController extends AbstractController
      */
     public function form(Request $request)
     {
-        $form = $this->createForm(GifFormType::class, null, ['ajax' => $request->isXmlHttpRequest()]);
+        $form = $this->createGifForm($request)->handleRequest($request);;
 
         // If the form is submitted.
-        $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
 
             // Generate an absolute URL-string.
@@ -85,12 +84,9 @@ class GifController extends AbstractController
             $embed_code = "<img src='{$url}'>";
         }
 
-//        $request = $request->isXmlHttpRequest();
-
         return $this->render('gif/gif-form-page.html.twig', [
             'form' => $form->createView(),
             'embed_code' => isset($embed_code) ? $embed_code : NULL,
-//            'ajax' => $request->isXmlHttpRequest()
         ]);
     }
 
@@ -105,11 +101,22 @@ class GifController extends AbstractController
      */
     public function formDateWidgetAjaxCallback(Request $request)
     {
-        $form = $this->createForm(GifFormType::class, null, ['ajax' => $request->isXmlHttpRequest()]);
-        $form->handleRequest($request);
+        $form = $this->createGifForm($request)->handleRequest($request);
         return $this->render('gif/form/date-widget.html.twig', [
             'form' => $form->createView(),
         ]);
+    }
+
+    /**
+     * Helper to create the form.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *
+     * @return \Symfony\Component\Form\FormInterface
+     */
+    protected function createGifForm(Request $request)
+    {
+        return $this->createForm(GifFormType::class, null, ['ajax' => $request->isXmlHttpRequest()]);
     }
 
 }
