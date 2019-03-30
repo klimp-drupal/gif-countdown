@@ -1,24 +1,27 @@
-<div class="date-widget form-group>">
-    <div class="form-group form-control">
+<div class="date-widget-wrapper>">
+
+    <div class="form-group">
         {% for el in form.checkboxes %}
 
             {% set el_type = el.vars.block_prefixes.1 %}
             {% set el_name = el.vars.name %}
             {% if el_type == 'checkbox' %}
 
-                {{ form_label(el) }}
-                {{ form_widget(el, {
-                    'attr': {
-                        'autocomplete': 'off',
-                    }
-                }) }}
+            {{ form_widget(el, {
+                'attr': {
+                    'autocomplete': 'off'
+                }
+            }) }}
+            {{ form_label(el) }}
 
             {% endif %}
         {% endfor %}
     </div>
 
-    {{ form_widget(form.date, { 'attr': {
-        'autocomplete': 'off',
-        'class': 'form-group'
-    } }) }}
+    <div class="form-group">
+        {{ form_widget(form.date, { 'attr': {
+            'autocomplete': 'off',
+        } }) }}
+    </div>
+
 </div>

@@ -5,7 +5,7 @@ $(document).on('change', selectors, function() {
   var $triggered = $(this);
   var $form = $triggered.closest('form');
 
-  var $target_selectors = $triggered.nextAll('input');
+  var $target_selectors = $triggered.parent('.form-check').nextAll('.form-check').children('input');
 
   $.ajax({
     url : "/_form-date-widget-ajax-callback",

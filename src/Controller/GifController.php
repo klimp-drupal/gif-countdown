@@ -39,6 +39,8 @@ class GifController extends AbstractController
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
      *   Request object.
+     * @param GifHelper $gifHelper
+     *   GifHelper service.
      *
      * @return \Symfony\Component\HttpFoundation\Response
      *   Response object.

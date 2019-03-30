@@ -1,0 +1,13 @@
+{# templates/bundles/FOSUserBundle/Registration/confirmed.html.twig #}
+{# the special '!' prefix avoids errors when extending from an overridden template #}
+
+{% extends "bootstrap_4_layout.html.twig" %}
+{#{% use "bootstrap_4_layout.html.twig" %}#}
+
+{% block datetime_widget -%}
+    {%- if widget != 'single_text' and not valid -%}
+        {% set attr = attr|merge({class: (attr.class|default('') ~ ' form-control')|trim}) -%}
+        {% set valid = true %}
+    {%- endif -%}
+    {{- parent() -}}
+{%- endblock datetime_widget %}
